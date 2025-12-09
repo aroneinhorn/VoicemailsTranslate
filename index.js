@@ -25,14 +25,14 @@ app.post('/', async (req, res) => {
     let transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'einhorn.aron@gmail.com',      // replace with your email
-        pass: 'Ari#3545235'          // replace with your app password
+        user: process.env.EMAIL_USER,      // replace with your email
+        pass: process.env.EMAIL_PASS          // replace with your app password
       }
     });
 
     try {
       await transporter.sendMail({
-        from: '"Webhook" <einhorn.aron@gmail.com>',
+        from: '"Webhook" <aroneinhornofficescan@gmail.com>',
         to,
         subject,
         text: message
@@ -48,4 +48,5 @@ app.post('/', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () =>
   console.log(`Server running on port ${PORT}`)
+
 );
