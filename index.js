@@ -4,6 +4,10 @@ const nodemailer = require('nodemailer');
 const app = express();
 app.use(express.json());
 
+app.get('/health', (req, res) => {
+  res.status(200).send('Alive');
+});
+
 app.post('/', async (req, res) => {
   const data = req.body;
 
@@ -50,3 +54,4 @@ app.listen(PORT, () =>
   console.log(`Server running on port ${PORT}`)
 
 );
+
