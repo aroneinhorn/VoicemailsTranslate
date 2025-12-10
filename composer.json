@@ -1,0 +1,9 @@
+{
+    "name": "voicemail-transcription",
+    "description": "Voicemail transcription webhook",
+    "require": {
+        "php": ">=7.4",
+        "ext-curl": "*",
+        "ext-json": "*"
+    }
+}
