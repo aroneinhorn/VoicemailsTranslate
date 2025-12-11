@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: voicemail-translate
+    env: php
+    plan: free
+    startCommand: php -S 0.0.0.0:$PORT -t .
+    envVars:
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: voicemail@yourdomain.com
+      - key: DEFAULT_EMAIL_RECIPIENT
+        sync: false
