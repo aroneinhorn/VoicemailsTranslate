@@ -3,12 +3,12 @@ services:
     name: voicemail-translate
     env: php
     plan: free
-    buildCommand: composer install --ignore-platform-reqs || true
-    startCommand: php -S  0.0.0.0:$PORT
+    buildCommand: echo "No build needed"
+    startCommand: php -S 0.0.0.0:$PORT
     envVars:
       - key: SENDGRID_API_KEY
         sync: false
       - key: EMAIL_FROM
-        sync: false
+        value: voicemail@yourdomain.com
       - key: DEFAULT_EMAIL_RECIPIENT
         sync: false
