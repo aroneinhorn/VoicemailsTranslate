@@ -1,8 +1,9 @@
 services:
   - type: web
     name: voicemail-translate
+    env: docker
     plan: free
-    startCommand: php -S 0.0.0.0:$PORT -t .
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: SENDGRID_API_KEY
         sync: false
