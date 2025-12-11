@@ -1,7 +1,6 @@
 services:
   - type: web
     name: voicemail-translate
-    env: php
     plan: free
     startCommand: php -S 0.0.0.0:$PORT -t .
     envVars:
