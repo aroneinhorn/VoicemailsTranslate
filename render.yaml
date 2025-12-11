@@ -2,9 +2,10 @@ services:
   - type: web
     name: voicemail-translate
     env: php
+    runtime: php
     plan: free
     buildCommand: echo "No build needed"
-    startCommand: php -S 0.0.0.0:$PORT
+    startCommand: php -S 0.0.0.0:$PORT -t .
     envVars:
       - key: SENDGRID_API_KEY
         sync: false
