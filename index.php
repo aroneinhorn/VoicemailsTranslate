@@ -10,9 +10,9 @@
 // ==============================================
 
 // Email settings - UPDATE THESE
-$emailFrom = 'aroneinhornofficescan@gmail.com';
+$emailFrom = 'voicemail@yourdomain.com';
 $emailFromName = 'FreePBX Voicemail Transcription';
-$defaultEmailRecipient = 'einhorn.aron@gmail.com'; // Fallback email
+$defaultEmailRecipient = 'your-email@example.com'; // Fallback email
 
 // Optional: Use environment variables in Render
 if (getenv('EMAIL_FROM')) {
