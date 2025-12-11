@@ -4,11 +4,10 @@ services:
     env: php
     runtime: php
     plan: free
-    buildCommand: echo "No build needed"
     startCommand: php -S 0.0.0.0:$PORT -t .
     envVars:
       - key: SENDGRID_API_KEY
-        sync: false
+         sync: false
       - key: EMAIL_FROM
         value: voicemail@yourdomain.com
       - key: DEFAULT_EMAIL_RECIPIENT
