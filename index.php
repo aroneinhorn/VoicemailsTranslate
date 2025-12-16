@@ -102,13 +102,15 @@ function sendEmailViaSendGrid($to, $subject, $htmlBody, $textBody, $apiKey, $fro
 }
 
 // Build email content
+// Build email content
 function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) {
-    $transcriptionText = $transcriptionData['transcription']['text'] ?? 'No transcription available';
-    $language = $transcriptionData['transcription']['language'] ?? 'Unknown';
+    // YiddishLabs uses  'summary' for transcription text
+    $transcriptionText = $transcriptionData['summary'] ?? 'No transcription available';
     $duration = $transcriptionData['duration_seconds'] ?? 'Unknown';
-    $confidence = $transcriptionData['transcription']['confidence'] ?? 'N/A';
     $jobId = $transcriptionData['id'] ?? 'Unknown';
-    
+    $keywords = $transcriptionData['keywords'] ?? [];
+    $keywordsText = !empty($keywords) ? implode(', ', $keywords) : 'None';
+
     // Plain text version
     $textBody = "=================================\n";
     $textBody .= "VOICEMAIL TRANSCRIPTION\n";
@@ -117,8 +119,7 @@ function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) 
     $textBody .= "Mailbox: $mailbox\n";
     $textBody .= "Received: $timestamp\n";
     $textBody .= "Duration: $duration seconds\n";
-    $textBody .= "Language: $language\n";
-    $textBody .= "Confidence: $confidence\n\n";
+    $textBody .= "Keywords: $keywordsText\n\n";
     $textBody .= "=================================\n";
     $textBody .= "TRANSCRIPTION:\n";
     $textBody .= "=================================\n\n";
@@ -126,7 +127,7 @@ function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) 
     $textBody .= "=================================\n";
     $textBody .= "Job ID: $jobId\n";
     $textBody .= "=================================\n";
-    
+
     // HTML version
     $htmlBody = <<<HTML
 <!DOCTYPE html>
@@ -146,7 +147,8 @@ function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) 
         .value { color: #333; }
         .transcription { background: #fff; border: 2px solid #e9ecef; padding: 20px; margin: 20px 0; border-radius: 8px; }
         .transcription h2 { margin: 0 0 15px 0; color: #667eea; font-size: 18px; }
-        .trans-text { font-size: 16px; line-height: 1.8; white-space: pre-wrap; }
+        .trans-text { font-size: 16px; line-height: 1.8; white-space: pre-wrap; direction: rtl; text-align: right; }
+        .keywords { background: #f0f7ff; padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 14px; }
         .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
     </style>
 </head>
@@ -161,8 +163,9 @@ function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) 
                 <div class="info-row"><span class="label">Mailbox:</span> <span class="value">$mailbox</span></div>
                 <div class="info-row"><span class="label">Received:</span> <span class="value">$timestamp</span></div>
                 <div class="info-row"><span class="label">Duration:</span> <span class="value">$duration seconds</span></div>
-                <div class="info-row"><span class="label">Language:</span> <span class="value">$language</span></div>
-                <div class="info-row"><span class="label">Confidence:</span> <span class="value">$confidence</span></div>
+            </div>
+            <div class="keywords">
+                <strong>🔑 Keywords:</strong> $keywordsText
             </div>
             <div class="transcription">
                 <h2>📝 Transcription</h2>
@@ -177,7 +180,7 @@ function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) 
 </body>
 </html>
 HTML;
-    
+
     return ['text' => $textBody, 'html' => $htmlBody];
 }
 
