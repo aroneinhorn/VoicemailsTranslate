@@ -1,7 +1,7 @@
 <?php
 /**
  * YiddishLabs Voicemail Transcription Webhook Handler
- * For Render deployment: https://voicemailstranslate.onrender.com
+ * For Render deployment: https://voicemail-translate.onrender.com
  */
 
 // Error handling - log to Render, don't display
