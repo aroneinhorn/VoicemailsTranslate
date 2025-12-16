@@ -1,8 +1,19 @@
 <?php
+
 /**
  * YiddishLabs Voicemail Transcription Webhook Handler
  * For Render deployment: https://voicemail-translate.onrender.com
  */
+
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 // Error handling - log to Render, don't display
 error_reporting(E_ALL);
