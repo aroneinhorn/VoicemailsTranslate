@@ -246,10 +246,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         
+        // Handle nested structure (YiddishLabs format)
+        $event = $webhookData['event'] ?? null;
+        $jobData = $webhookData['data'] ?? $webhookData; // Fallback to root if no 'data' wrapper
+
         // Extract job details
-        $jobId = $webhookData['id'] ?? null;
-        $status = $webhookData['status'] ?? 'Unknown';
-        
+        $jobId = $jobData['id'] ?? null;
+        $status = $jobData['status'] ?? 'Unknown';
+      
         if (!$jobId) {
             logMessage("ERROR: No job ID in webhook data");
             http_response_code(400);
