@@ -188,6 +188,20 @@ HTML;
 // Set JSON header
 header('Content-Type: application/json');
 
+// Debug endpoint - check configuration
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['debug'])) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'sendgrid_key_set' => !empty($sendgridApiKey),
+        'sendgrid_key_prefix' => substr($sendgridApiKey, 0, 3),
+        'email_from' => $emailFrom,
+        'default_recipient' => $defaultEmailRecipient,
+        'curl_enabled' => function_exists('curl_init'),
+        'php_version' => PHP_VERSION
+    ], JSON_PRETTY_PRINT);
+    exit;
+}
+
 // Handle GET requests (for testing)
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     logMessage("GET request received - Health check");
