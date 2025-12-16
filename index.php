@@ -104,8 +104,8 @@ function sendEmailViaSendGrid($to, $subject, $htmlBody, $textBody, $apiKey, $fro
 
 // Build email content
 function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) {
-    // YiddishLabs uses 'summary' for transcription text
-    $transcriptionText = $transcriptionData['summary'] ?? 'No transcription available';
+    $summaryText = $transcriptionData['summary'] ?? 'No transcription available';
+    $transcriptionText = $transcriptionData['text'] ?? 'No transcription available';
     $duration = $transcriptionData['duration_seconds'] ?? 'Unknown';
     $jobId = $transcriptionData['id'] ?? 'Unknown';
     $keywords = $transcriptionData['keywords'] ?? [];
@@ -119,7 +119,8 @@ function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) 
     $textBody .= "Mailbox: $mailbox\n";
     $textBody .= "Received: $timestamp\n";
     $textBody .= "Duration: $duration seconds\n";
-    $textBody .= "Keywords: $keywordsText\n\n";
+    $textBody .= "Keywords: $keywordsText\n";
+    $textBody .= "Summary: $summaryText\n\n";
     $textBody .= "=================================\n";
     $textBody .= "TRANSCRIPTION:\n";
     $textBody .= "=================================\n\n";
@@ -166,6 +167,9 @@ function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) 
             </div>
             <div class="keywords">
                 <strong>🔑 Keywords:</strong> $keywordsText
+            </div>
+            <div class="summary">
+                <strong> Summary:</strong> $summaryText
             </div>
             <div class="transcription">
                 <h2>📝 Transcription</h2>
