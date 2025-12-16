@@ -5,6 +5,7 @@
  * For Render deployment: https://voicemail-translate.onrender.com
  */
 
+// CORS headers - allow browser testing
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -46,7 +47,7 @@ function sendEmailViaSendGrid($to, $subject, $htmlBody, $textBody, $apiKey, $fro
         logMessage("ERROR: SendGrid API key not configured");
         return false;
     }
-    
+
     $data = [
         'personalizations' => [[
             'to' => [['email' => $to]],
@@ -61,13 +62,13 @@ function sendEmailViaSendGrid($to, $subject, $htmlBody, $textBody, $apiKey, $fro
             ['type' => 'text/html', 'value' => $htmlBody]
         ]
     ];
-    
+
     $ch = curl_init('https://api.sendgrid.com/v3/mail/send');
     if ($ch === false) {
         logMessage("ERROR: Failed to initialize cURL");
         return false;
     }
-    
+
     curl_setopt_array($ch, [
         CURLOPT_HTTPHEADER => [
             'Authorization: Bearer ' . $apiKey,
@@ -79,19 +80,19 @@ function sendEmailViaSendGrid($to, $subject, $htmlBody, $textBody, $apiKey, $fro
         CURLOPT_TIMEOUT => 30,
         CURLOPT_SSL_VERIFYPEER => true
     ]);
-    
+
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
     curl_close($ch);
-    
+
     if ($curlError) {
         logMessage("CURL Error: $curlError");
         return false;
     }
-    
+
     logMessage("SendGrid Response Code: $httpCode");
-    
+
     if ($httpCode >= 200 && $httpCode < 300) {
         logMessage("SendGrid: Email sent successfully");
         return true;
@@ -102,9 +103,8 @@ function sendEmailViaSendGrid($to, $subject, $htmlBody, $textBody, $apiKey, $fro
 }
 
 // Build email content
-// Build email content
 function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) {
-    // YiddishLabs uses  'summary' for transcription text
+    // YiddishLabs uses 'summary' for transcription text
     $transcriptionText = $transcriptionData['summary'] ?? 'No transcription available';
     $duration = $transcriptionData['duration_seconds'] ?? 'Unknown';
     $jobId = $transcriptionData['id'] ?? 'Unknown';
@@ -171,7 +171,7 @@ function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) 
                 <h2>📝 Transcription</h2>
                 <div class="trans-text">$transcriptionText</div>
             </div>
-        </div>
+         </div>
         <div class="footer">
             Job ID: $jobId<br>
             Powered by YiddishLabs
@@ -194,7 +194,7 @@ header('Content-Type: application/json');
 // Handle GET requests (for testing)
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     logMessage("GET request received - Health check");
-    
+
     $response = [
         'status' => 'ok',
         'service' => 'YiddishLabs Voicemail Webhook',
@@ -205,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'email_from' => $emailFrom,
         'default_recipient' => $defaultEmailRecipient
     ];
-    
+
     http_response_code(200);
     echo json_encode($response, JSON_PRETTY_PRINT);
     exit;
@@ -214,38 +214,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 // Handle POST requests (webhook from YiddishLabs)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     logMessage("=== POST Webhook Request Received ===");
-    
+
     try {
         // Get query parameters
         $emailRecipient = $_GET['email'] ?? $defaultEmailRecipient;
         $callerIDFromQuery = $_GET['caller_id'] ?? null;
         $mailboxFromQuery = $_GET['mailbox'] ?? null;
-        
+
         logMessage("Email recipient: $emailRecipient");
-        
+
         // Get POST data
         $rawData = file_get_contents('php://input');
-        
+
         if (empty($rawData)) {
             logMessage("ERROR: Empty request body");
             http_response_code(400);
             echo json_encode(['error' => 'Empty request body']);
             exit;
         }
-        
+
         logMessage("Raw data received (length: " . strlen($rawData) . ")");
-        logMessage("RAW PAYLOAD: " . $rawData); 
 
         // Parse JSON
         $webhookData = json_decode($rawData, true);
-        
+
         if (json_last_error() !== JSON_ERROR_NONE) {
             logMessage("ERROR: JSON parse error - " . json_last_error_msg());
             http_response_code(400);
             echo json_encode(['error' => 'Invalid JSON: ' . json_last_error_msg()]);
             exit;
         }
-        
+
         // Handle nested structure (YiddishLabs format)
         $event = $webhookData['event'] ?? null;
         $jobData = $webhookData['data'] ?? $webhookData; // Fallback to root if no 'data' wrapper
@@ -253,36 +252,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Extract job details
         $jobId = $jobData['id'] ?? null;
         $status = $jobData['status'] ?? 'Unknown';
-      
+
         if (!$jobId) {
             logMessage("ERROR: No job ID in webhook data");
             http_response_code(400);
-            echo json_encode(['error' => 'No job ID']);
+            echo json_encode(['error' =>  'No job ID']);
             exit;
         }
-        
-        logMessage("Job ID: $jobId | Status: $status");
-        
+
+        logMessage("Event: $event | Job ID: $jobId | Status: $status");
+
+        // Handle failed transcriptions
+        if ($event === 'transcription.failed' && $status === 'failed') {
+            logMessage("Transcription actually failed for job $jobId");
+            http_response_code(200);
+            echo json_encode([
+                'message' => 'Transcription failed acknowledged',
+                'job_id' => $jobId,
+                'event' => $event
+            ]);
+            exit;
+        }
+
         // Only process completed transcriptions
-        if ($status !== 'completed') {
-            logMessage("Job not completed yet (status: $status). Acknowledging.");
+        if ($status !== 'completed' && $event !== 'transcription.completed') {
+            logMessage("Job not completed yet (status: $status, event: $event). Acknowledging.");
             http_response_code(200);
             echo json_encode([
                 'message' => 'Status received',
                 'status' => $status,
+                'event' => $event,
                 'job_id' => $jobId
             ]);
             exit;
         }
-        
+
         // Extract caller information
-        $nameField = $webhookData['name'] ?? '';
+        $nameField = $jobData['name'] ?? '';
         $metadata = extractMetadata($nameField);
-        
+
         $callerID = 'Unknown';
         $mailbox = 'Unknown';
         $timestamp = date('Y-m-d H:i:s');
-        
+
         if ($metadata) {
             $callerID = $metadata['caller_id'] ?? $callerID;
             $mailbox = $metadata['mailbox'] ?? $mailbox;
@@ -295,13 +307,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mailbox = $mailboxFromQuery ?? $mailbox;
             logMessage("Using query parameters: Caller=$callerID, Mailbox=$mailbox");
         }
-        
+
+        // Debug logging
+        logMessage("DEBUG: jobData has summary field: " . (isset($jobData['summary']) ? 'YES' : 'NO'));
+        if (isset($jobData['summary'])) {
+            logMessage("DEBUG: Summary preview: " . substr($jobData['summary'], 0, 50) . "...");
+        }
+
         // Build email content
-        $emailContent = buildEmailContent($callerID, $mailbox, $timestamp, $webhookData);
+        $emailContent = buildEmailContent($callerID, $mailbox, $timestamp, $jobData);
         $subject = "Voicemail from $callerID";
-        
+
         logMessage("Sending email to: $emailRecipient");
-        
+
         // Send email via SendGrid
         $emailSent = sendEmailViaSendGrid(
             $emailRecipient,
@@ -312,10 +330,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $emailFrom,
             $emailFromName
         );
-        
+
         if ($emailSent) {
             logMessage("✓ Email sent successfully to $emailRecipient");
-            http_response_code(200);
+             http_response_code(200);
             echo json_encode([
                 'success' => true,
                 'message' => 'Email sent successfully',
@@ -333,7 +351,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'job_id' => $jobId
             ]);
         }
-        
+
     } catch (Exception $e) {
         logMessage("EXCEPTION: " . $e->getMessage());
         http_response_code(500);
@@ -343,7 +361,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => $e->getMessage()
         ]);
     }
-    
+
     logMessage("=== Webhook Processing Complete ===\n");
     exit;
 }
@@ -351,3 +369,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Handle other methods
 http_response_code(405);
 echo json_encode(['error' => 'Method not allowed']);
+?>
