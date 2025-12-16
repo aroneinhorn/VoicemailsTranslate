@@ -231,7 +231,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         logMessage("Raw data received (length: " . strlen($rawData) . ")");
-        
+        logMessage("RAW PAYLOAD: " . $rawData); 
+
         // Parse JSON
         $webhookData = json_decode($rawData, true);
         
