@@ -257,15 +257,23 @@ header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     logMessage("GET request received - Health check");
 
+    // Mask email function
+    function maskEmail($email) {
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return '***';
+        }
+        list($username, $domain) = explode('@', $email);
+        $maskedUsername = substr($username, 0, 2) . str_repeat('*', max(0, strlen($username) - 2));
+        return $maskedUsername . '@' . $domain;
+    }
+
     $response = [
         'status' => 'ok',
         'service' => 'YiddishLabs Voicemail Webhook',
         'version' => '1.0',
         'php_version' => PHP_VERSION,
         'timestamp' => date('Y-m-d H:i:s'),
-        'sendgrid_configured' => !empty($sendgridApiKey),
-        'email_from' => $emailFrom,
-        'default_recipient' => $defaultEmailRecipient
+        'sendgrid_configured' => !empty($sendgridApiKey)
     ];
 
     http_response_code(200);
