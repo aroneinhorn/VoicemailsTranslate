@@ -102,7 +102,7 @@ function sendEmailViaSendGrid($to, $subject, $htmlBody, $textBody, $apiKey, $fro
     }
 }
 
-// Build email content
+// Build email content - OUTLOOK COMPATIBLE VERSION
 function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) {
     $summaryText = $transcriptionData['summary'] ?? 'No transcription available';
     $transcriptionText = $transcriptionData['text'] ?? 'No transcription available';
@@ -129,58 +129,116 @@ function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) 
     $textBody .= "Job ID: $jobId\n";
     $textBody .= "=================================\n";
 
-    // HTML version
+    // HTML version - TABLE-BASED FOR OUTLOOK COMPATIBILITY
     $htmlBody = <<<HTML
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
-        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .content { padding: 30px 20px; }
-        .info-box { background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .info-row { padding: 8px 0; }
-        .label { font-weight: 600; color: #555; display: inline-block; min-width: 100px; }
-        .value { color: #333; }
-        .transcription { background: #fff; border: 2px solid #e9ecef; padding: 20px; margin: 20px 0; border-radius: 8px; }
-        .transcription h2 { margin: 0 0 15px 0; color: #667eea; font-size: 18px; }
-        .trans-text { font-size: 16px; line-height: 1.8; white-space: pre-wrap; direction: rtl; text-align: right; }
-        .keywords { background: #f0f7ff; padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 14px; }
-        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--[if mso]>
+    <style type="text/css">
+        body, table, td {font-family: Arial, sans-serif !important;}
     </style>
+    <![endif]-->
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📞 New Voicemail Transcription</h1>
-        </div>
-        <div class="content">
-            <div class="info-box">
-                <div class="info-row"><span class="label">From:</span> <span class="value"><strong>$callerID</strong></span></div>
-                <div class="info-row"><span class="label">Mailbox:</span> <span class="value">$mailbox</span></div>
-                <div class="info-row"><span class="label">Received:</span> <span class="value">$timestamp</span></div>
-                <div class="info-row"><span class="label">Duration:</span> <span class="value">$duration seconds</span></div>
-            </div>
-            <div class="keywords">
-                <strong>🔑 Keywords:</strong> $keywordsText
-            </div>
-            <div class="summary">
-                <strong> Summary:</strong> $summaryText
-            </div>
-            <div class="transcription">
-                <h2>📝 Transcription</h2>
-                <div class="trans-text">$transcriptionText</div>
-            </div>
-         </div>
-        <div class="footer">
-            Job ID: $jobId<br>
-            Powered by YiddishLabs
-        </div>
-    </div>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+    <!-- Main wrapper table -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f4f4f4;">
+        <tr>
+            <td style="padding: 20px 0;">
+                <!-- Content container -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" align="center" style="background-color: #ffffff; margin: 0 auto;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #667eea; color: #ffffff; padding: 30px 20px; text-align: center;">
+                            <h1 style="margin: 0; font-size: 24px; font-weight: normal;">📞 New Voicemail Transcription</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content padding wrapper -->
+                    <tr>
+                        <td style="padding: 30px 20px;">
+                            
+                            <!-- Info Box -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8f9fa; border-left: 4px solid #667eea;">
+                                <tr>
+                                    <td style="padding: 15px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    <span style="font-weight: 600; color: #555555; display: inline-block; min-width: 100px;">From:</span>
+                                                    <span style="color: #333333;"><strong>$callerID</strong></span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    <span style="font-weight: 600; color: #555555; display: inline-block; min-width: 100px;">Mailbox:</span>
+                                                    <span style="color: #333333;">$mailbox</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    <span style="font-weight: 600; color: #555555; display: inline-block; min-width: 100px;">Received:</span>
+                                                    <span style="color: #333333;">$timestamp</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    <span style="font-weight: 600; color: #555555; display: inline-block; min-width: 100px;">Duration:</span>
+                                                    <span style="color: #333333;">$duration seconds</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Keywords Box -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 20px;">
+                                <tr>
+                                    <td style="background-color: #f0f7ff; padding: 10px; font-size: 14px; color: #333333;">
+                                        <strong>🔑 Keywords:</strong> $keywordsText
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Summary Box -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 20px;">
+                                <tr>
+                                    <td style="padding: 10px 0; color: #333333;">
+                                        <strong>📋 Summary:</strong> $summaryText
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Transcription Box -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 20px; background-color: #ffffff; border: 2px solid #e9ecef;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <h2 style="margin: 0 0 15px 0; color: #667eea; font-size: 18px; font-weight: 600;">📝 Transcription</h2>
+                                        <div style="font-size: 16px; line-height: 1.8; white-space: pre-wrap; direction: rtl; text-align: right; color: #333333;">$transcriptionText</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666666;">
+                            Job ID: $jobId<br>
+                            Powered by YiddishLabs
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
 HTML;
@@ -319,7 +377,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Build email content
-        $emailContent = buildEmailContent($callerID, $mailbox, $timestamp, $jobData);
+         $emailContent = buildEmailContent($callerID, $mailbox, $timestamp, $jobData);
         $subject = "Voicemail from $callerID";
 
         logMessage("Sending email to: $emailRecipient");
