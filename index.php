@@ -29,7 +29,7 @@ $defaultEmailRecipient = getenv('DEFAULT_EMAIL_RECIPIENT') ?: 'your-email@exampl
 
 // Logging function
 function logMessage($message) {
-    error_log(date('[Y-m-d H:i:s]') . " " . $message);
+    error_log(date('[j/n/Y g:i A]') . " " . $message);
 }
 
 // Extract metadata from name field
@@ -272,7 +272,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'service' => 'YiddishLabs Voicemail Webhook',
         'version' => '1.0',
         'php_version' => PHP_VERSION,
-        'timestamp' => date('Y-m-d H:i:s'),
+        'timestamp' => date('j/n/Y g:i A'),
         'sendgrid_configured' => !empty($sendgridApiKey)
     ];
 
@@ -363,7 +363,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $callerID = 'Unknown';
         $mailbox = 'Unknown';
-        $timestamp = date('Y-m-d H:i:s');
+        $timestamp = date('j/n/Y g:i A');
 
         if ($metadata) {
             $callerID = $metadata['caller_id'] ?? $callerID;
