@@ -106,6 +106,7 @@ function sendEmailViaSendGrid($to, $subject, $htmlBody, $textBody, $apiKey, $fro
 function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) {
     $summaryText = $transcriptionData['summary'] ?? 'No transcription available';
     $transcriptionText = $transcriptionData['text'] ?? 'No transcription available';
+    $transcriptionText = trim(preg_replace('/<\|[^|]+\|>\s*/', '', $transcriptionText));
     $duration = $transcriptionData['duration_seconds'] ?? 'Unknown';
     $jobId = $transcriptionData['id'] ?? 'Unknown';
     $keywords = $transcriptionData['keywords'] ?? [];
