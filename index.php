@@ -106,7 +106,6 @@ function sendEmailViaSendGrid($to, $subject, $htmlBody, $textBody, $apiKey, $fro
 function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) {
     $summaryText = $transcriptionData['summary'] ?? 'No transcription available';
     $transcriptionText = $transcriptionData['text'] ?? 'No transcription available';
-    $transcriptionText = trim(preg_replace('/<\|[^|]+\|>\s*/', '', $transcriptionText));
     $duration = $transcriptionData['duration_seconds'] ?? 'Unknown';
     $jobId = $transcriptionData['id'] ?? 'Unknown';
     $keywords = $transcriptionData['keywords'] ?? [];
@@ -231,7 +230,7 @@ function buildEmailContent($callerID, $mailbox, $timestamp, $transcriptionData) 
                     <!-- Footer -->
                     <tr>
                         <td style="background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666666;">
-                            Job ID: $jobId<br>
+                            Job ID: <a href="https://app.yiddishlabs.com/app/transcriptions/$jobId" style="color: #007bff; text-decoration: none;">$jobId</a><br>
                             Powered by YiddishLabs
                         </td>
                     </tr>
